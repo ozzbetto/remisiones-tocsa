@@ -34,6 +34,7 @@ export interface Remission {
   receivedBy: string;
   createdAt?: string;
   pdfGenerated?: boolean;
+  status?: 'active' | 'annulled';
 }
 
 @Injectable({
@@ -61,6 +62,10 @@ export class RemissionService {
 
   deleteRemission(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
+  }
+
+  annulRemission(id: string): Observable<Remission> {
+    return this.http.patch<Remission>(`${this.apiUrl}/${id}/annul`, {});
   }
 
   downloadPDF(id: string) {

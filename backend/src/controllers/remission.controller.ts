@@ -35,6 +35,11 @@ export const updateRemission = async (req: Request, res: Response) => {
   try {
     const existingRemission = await Remission.findById(req.params.id);
     if (!existingRemission) return res.status(404).json({ message: 'Remisión no encontrada' });
+    
+    if (existingRemission.status === 'annulled') {
+      return res.status(403).json({ message: 'No se puede modificar una remisión anulada' });
+    }
+    
     if (existingRemission.pdfGenerated) {
       return res.status(403).json({ message: 'No se puede modificar una remisión que ya tiene el PDF generado' });
     }
@@ -50,12 +55,34 @@ export const deleteRemission = async (req: Request, res: Response) => {
   try {
     const existingRemission = await Remission.findById(req.params.id);
     if (!existingRemission) return res.status(404).json({ message: 'Remisión no encontrada' });
+    
     if (existingRemission.pdfGenerated) {
-      return res.status(403).json({ message: 'No se puede eliminar una remisión que ya tiene el PDF generado' });
+      return res.status(403).json({ message: 'No se puede eliminar una remisión que ya tiene el PDF generado. Debe anularla.' });
     }
 
     await Remission.findByIdAndDelete(req.params.id);
     res.json({ message: 'Remisión eliminada con éxito' });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const annulRemission = async (req: Request, res: Response) => {
+  try {
+    const existingRemission = await Remission.findById(req.params.id);
+    if (!existingRemission) return res.status(404).json({ message: 'Remisión no encontrada' });
+
+    if (!existingRemission.pdfGenerated) {
+      return res.status(400).json({ message: 'Solo se pueden anular remisiones que ya tienen el PDF generado. Si no tiene PDF, puede eliminarla.' });
+    }
+
+    if (existingRemission.status === 'annulled') {
+      return res.status(400).json({ message: 'La remisión ya se encuentra anulada' });
+    }
+
+    existingRemission.status = 'annulled';
+    const updatedRemission = await existingRemission.save();
+    res.json(updatedRemission);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

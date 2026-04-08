@@ -31,6 +31,7 @@ export interface IRemission extends Document {
   authorizedBy: string;
   receivedBy: string;
   pdfGenerated: boolean;
+  status: 'active' | 'annulled';
 }
 
 const ItemSchema = new Schema<IItem>({
@@ -72,6 +73,7 @@ const RemissionSchema = new Schema<IRemission>({
   authorizedBy: { type: String, required: true },
   receivedBy: { type: String, required: true },
   pdfGenerated: { type: Boolean, default: false },
+  status: { type: String, enum: ['active', 'annulled'], default: 'active' },
 }, { timestamps: true });
 
 // Pre-save hook to generate automatic remission number: 001-001-0000001

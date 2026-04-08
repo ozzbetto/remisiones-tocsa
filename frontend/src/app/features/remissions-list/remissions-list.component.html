@@ -23,13 +23,13 @@
           <th pSortableColumn="remissionNumber">Número <p-sortIcon field="remissionNumber"></p-sortIcon></th>
           <th pSortableColumn="date">Fecha <p-sortIcon field="date"></p-sortIcon></th>
           <th pSortableColumn="recipient.name">Destinatario <p-sortIcon field="recipient.name"></p-sortIcon></th>
-          <th>Motivo</th>
+          <th>Estado</th>
           <th>Artículos</th>
           <th class="text-center">Acciones</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-remission>
-        <tr>
+        <tr [ngClass]="{'opacity-75 bg-light': remission.status === 'annulled'}">
           <td>
             <span class="font-monospace fw-bold text-primary">{{ remission.remissionNumber }}</span>
           </td>
@@ -41,7 +41,10 @@
             </div>
           </td>
           <td>
-            <p-tag [value]="remission.transferReason | uppercase" severity="info" [rounded]="true"></p-tag>
+            <div class="d-flex flex-column gap-1">
+              <p-tag [value]="remission.transferReason | uppercase" severity="info" [rounded]="true"></p-tag>
+              <p-tag *ngIf="remission.status === 'annulled'" value="ANULADA" severity="danger" [rounded]="true"></p-tag>
+            </div>
           </td>
           <td>
             <p-tag [value]="remission.items.length.toString() + ' ítem(s)'" severity="secondary" styleClass="border"></p-tag>
@@ -49,8 +52,13 @@
           <td class="text-center">
             <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" pTooltip="Ver Detalles" [routerLink]="['/remisiones/ver', remission._id]"></p-button>
             <p-button icon="pi pi-download" [rounded]="true" [text]="true" severity="success" pTooltip="Descargar PDF" (onClick)="downloadPDF(remission._id!)"></p-button>
-            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" pTooltip="Editar" [routerLink]="['/remisiones/editar', remission._id]" [disabled]="remission.pdfGenerated"></p-button>
-            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" pTooltip="Eliminar" (onClick)="deleteRemission(remission._id!)" [disabled]="remission.pdfGenerated"></p-button>
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" pTooltip="Editar" [routerLink]="['/remisiones/editar', remission._id]" [disabled]="remission.pdfGenerated || remission.status === 'annulled'"></p-button>
+            
+            @if (!remission.pdfGenerated) {
+              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" pTooltip="Eliminar" (onClick)="deleteRemission(remission._id!)"></p-button>
+            } @else if (remission.status !== 'annulled') {
+              <p-button icon="pi pi-ban" [rounded]="true" [text]="true" severity="danger" pTooltip="Anular Remisión" (onClick)="annulRemission(remission._id!)"></p-button>
+            }
           </td>
         </tr>
       </ng-template>

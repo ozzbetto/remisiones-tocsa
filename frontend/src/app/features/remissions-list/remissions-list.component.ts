@@ -45,7 +45,26 @@ export class RemissionsListComponent implements OnInit {
         next: () => {
           this.remissions.update(list => list.filter(r => r._id !== id));
         },
-        error: (err) => console.error('Error al eliminar:', err)
+        error: (err) => {
+          console.error('Error al eliminar:', err);
+          alert(err.error?.message || 'Error al eliminar la remisión');
+        }
+      });
+    }
+  }
+
+  annulRemission(id: string) {
+    if (confirm('¿Está seguro de anular esta remisión? Aparecerá como ANULADA en el sistema y en el PDF.')) {
+      this.remissionService.annulRemission(id).subscribe({
+        next: (updatedRemission) => {
+          this.remissions.update(list => 
+            list.map(r => r._id === id ? updatedRemission : r)
+          );
+        },
+        error: (err) => {
+          console.error('Error al anular:', err);
+          alert(err.error?.message || 'Error al anular la remisión');
+        }
       });
     }
   }

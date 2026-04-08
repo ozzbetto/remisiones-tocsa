@@ -2,6 +2,8 @@ import { IRemission } from '../models/Remission.js';
 import { TDocumentDefinitions } from 'pdfmake/interfaces.js';
 
 export const generateRemissionPDF = (remission: IRemission): TDocumentDefinitions => {
+  const isAnnulled = remission.status === 'annulled';
+
   const tableHeader = [
     { text: 'Descripción', style: 'tableHeader' },
     { text: 'Marca', style: 'tableHeader' },
@@ -9,6 +11,7 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
     { text: 'Nro. Serie', style: 'tableHeader' },
     { text: 'Cant.', style: 'tableHeader' },
     { text: 'Estado', style: 'tableHeader' },
+    { text: 'Observación', style: 'tableHeader' },
   ];
 
   const tableRows = remission.items.map(item => [
@@ -18,11 +21,27 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
     item.serial,
     item.quantity.toString(),
     item.condition,
+    item.observation || '',
   ]);
 
   const definition: TDocumentDefinitions = {
     pageSize: 'A4',
     pageMargins: [40, 60, 40, 60],
+    background: isAnnulled ? [
+      {
+        text: 'ANULADA',
+        color: '#ff0000',
+        opacity: 0.1,
+        fontSize: 100,
+        bold: true,
+        alignment: 'center',
+        margin: [0, 300, 0, 0],
+        transform: {
+          type: 'rotate',
+          angle: 45
+        }
+      }
+    ] : [],
     content: [
       {
         columns: [
@@ -37,7 +56,7 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
           {
             width: 'auto',
             stack: [
-              { text: 'NOTA DE REMISIÓN', style: 'docType' },
+              { text: isAnnulled ? 'NOTA DE REMISIÓN (ANULADA)' : 'NOTA DE REMISIÓN', style: 'docType', color: isAnnulled ? '#e02424' : '#1f2937' },
               { text: `NRO: ${remission.remissionNumber}`, style: 'docNumber' },
               { text: `Fecha: ${remission.date.toLocaleDateString()}`, style: 'headerSub' },
             ],
@@ -75,7 +94,7 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
       {
         table: {
           headerRows: 1,
-          widths: ['*', 'auto', 'auto', 'auto', 35, 50],
+          widths: ['*', 'auto', 'auto', 'auto', 30, 45, 'auto'],
           body: [tableHeader, ...tableRows],
         },
         layout: 'lightHorizontalLines',
