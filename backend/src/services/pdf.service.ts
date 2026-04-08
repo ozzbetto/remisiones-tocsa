@@ -32,14 +32,10 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
         text: 'ANULADA',
         color: '#ff0000',
         opacity: 0.1,
-        fontSize: 100,
+        fontSize: 80,
         bold: true,
         alignment: 'center',
-        margin: [0, 300, 0, 0],
-        transform: {
-          type: 'rotate',
-          angle: 45
-        }
+        margin: [0, 350, 0, 0]
       }
     ] : [],
     content: [
