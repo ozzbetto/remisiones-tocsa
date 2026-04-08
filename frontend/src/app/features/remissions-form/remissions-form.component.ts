@@ -76,6 +76,7 @@ export class RemissionsFormComponent implements OnInit {
       quantity: [1, [Validators.required, Validators.min(1)]],
       condition: ['usado', Validators.required],
       observation: [''],
+      cost: [null],
       requiresResponsibilityTerm: [false]
     });
     this.items.push(itemGroup);

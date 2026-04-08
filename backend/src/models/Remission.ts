@@ -9,6 +9,7 @@ export interface IItem {
   quantity: number;
   condition: 'nuevo' | 'usado' | 'reparado' | 'dañado';
   observation?: string;
+  cost?: number;
   requiresResponsibilityTerm?: boolean;
 }
 
@@ -48,6 +49,7 @@ const ItemSchema = new Schema<IItem>({
     required: true 
   },
   observation: { type: String },
+  cost: { type: Number },
   requiresResponsibilityTerm: { type: Boolean, default: false },
 });
 
@@ -55,7 +57,7 @@ const RemissionSchema = new Schema<IRemission>({
   remissionNumber: { type: String, unique: true },
   date: { type: Date, default: Date.now, required: true },
   sender: {
-    name: { type: String, default: 'TOCSA S.A. - Depto. Informática' },
+    name: { type: String, default: 'TOCSA S.A. - Dpto. Informática' },
     ruc: { type: String, default: '80019114-5' },
     address: { type: String, default: 'América esq. Chacoré, Luque - Paraguay' },
   },

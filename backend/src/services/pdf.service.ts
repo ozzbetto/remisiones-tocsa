@@ -134,30 +134,57 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
   const trItems = remission.items.filter(item => item.requiresResponsibilityTerm);
 
   if (trItems.length > 0) {
+    const formatCurrency = (value: number | undefined) => {
+      if (value === undefined || value === null) return '-';
+      return new Intl.NumberFormat('es-PY', { style: 'currency', currency: 'PYG' }).format(value);
+    };
+
     const trTableRows = trItems.map(item => [
       item.description,
       item.brand,
       item.model,
       item.serial,
-      item.condition
+      item.condition,
+      formatCurrency(item.cost)
     ]);
 
     const trPage = [
       { text: '', pageBreak: 'before' },
+      {
+        columns: [
+          {
+            width: '*',
+            stack: [
+              { text: remission.sender.name, style: 'headerTitle' },
+              { text: `RUC: ${remission.sender.ruc}`, style: 'headerSub' },
+              { text: remission.sender.address, style: 'headerSub' },
+            ],
+          },
+          {
+            width: 'auto',
+            stack: [
+              { text: `Fecha: ${remission.date.toLocaleDateString()}`, style: 'headerSub' },
+              { text: `Destino: ${remission.recipient.location}`, style: 'headerSub' },
+            ],
+            alignment: 'right',
+          },
+        ],
+        margin: [0, 0, 0, 20]
+      },
       { text: 'TÉRMINO DE RESPONSABILIDAD Y CUSTODIA DE EQUIPOS INFORMÁTICOS', style: 'trTitle', alignment: 'center', margin: [0, 0, 0, 20] },
-      { text: `Fecha: ${remission.date.toLocaleDateString()}`, style: 'infoText', margin: [0, 0, 0, 10] },
-      { text: `Por medio de la presente, el/la Sr./Sra. ${remission.recipient.name} con CI/RUC ${remission.recipient.idNumber}, asume la responsabilidad, cuidado y custodia de los siguientes equipos informáticos asignados para el desempeño de sus funciones en el cargo de ${remission.recipient.positionArea}:`, style: 'infoText', margin: [0, 0, 0, 15], alignment: 'justify' },
+      { text: `Por medio de la presente, el/la Sr./Sra. ${remission.recipient.name} con CI/RUC ${remission.recipient.idNumber}, asume la responsabilidad, cuidado y custodia de los siguientes equipos informáticos asignados para el desempeño de sus funciones en el cargo de ${remission.recipient.positionArea}, con destino a ${remission.recipient.location}:`, style: 'trText', margin: [0, 0, 0, 15], alignment: 'justify' },
       {
         table: {
           headerRows: 1,
-          widths: ['*', 'auto', 'auto', 'auto', 'auto'],
+          widths: ['*', 'auto', 'auto', 'auto', 'auto', 'auto'],
           body: [
             [
-              { text: 'Descripción', style: 'tableHeader' },
-              { text: 'Marca', style: 'tableHeader' },
-              { text: 'Modelo', style: 'tableHeader' },
-              { text: 'Nro. Serie', style: 'tableHeader' },
-              { text: 'Estado', style: 'tableHeader' },
+              { text: 'Descripción', style: 'trTableHeader' },
+              { text: 'Marca', style: 'trTableHeader' },
+              { text: 'Modelo', style: 'trTableHeader' },
+              { text: 'Nro. Serie', style: 'trTableHeader' },
+              { text: 'Estado', style: 'trTableHeader' },
+              { text: 'Costo', style: 'trTableHeader' },
             ],
             ...trTableRows
           ]
@@ -176,9 +203,10 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
             return '#a0aabf';
           },
         },
+        fontSize: 9,
         margin: [0, 0, 0, 20]
       },
-      { text: 'Condiciones de Uso y Responsabilidad:', style: 'sectionLabel', margin: [0, 0, 0, 10] },
+      { text: 'Condiciones de Uso y Responsabilidad:', style: 'trSectionLabel', margin: [0, 0, 0, 10] },
       {
         ul: [
           { text: 'El responsable asume el cuidado y custodia de los equipos descritos.', margin: [0, 0, 0, 5] },
@@ -186,7 +214,7 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
           { text: 'Se compromete al uso adecuado del software y al estricto cumplimiento de las políticas de seguridad de la empresa.', margin: [0, 0, 0, 5] },
           { text: 'Se compromete a la devolución inmediata del equipo en las mismas condiciones entregadas cuando le sea requerido o al término de su relación laboral.', margin: [0, 0, 0, 5] }
         ],
-        style: 'infoText',
+        style: 'trText',
         alignment: 'justify',
         margin: [0, 0, 0, 40]
       },
@@ -195,7 +223,7 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
           {
             stack: [
               { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
-              { text: `Firma de Recepción y Conformidad\n${remission.recipient.name}\nCI/RUC: ${remission.recipient.idNumber}`, style: 'signature' },
+              { text: `Firma de Recepción y Conformidad\n${remission.recipient.name}\nCI/RUC: ${remission.recipient.idNumber}`, style: 'trSignature' },
             ],
             alignment: 'center',
           },
@@ -205,7 +233,11 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
 
     definition.content = (definition.content as any[]).concat(trPage);
     if (!definition.styles) definition.styles = {};
-    definition.styles['trTitle'] = { fontSize: 14, bold: true, color: '#1f2937' };
+    definition.styles['trTitle'] = { fontSize: 13, bold: true, color: '#1f2937' };
+    definition.styles['trText'] = { fontSize: 9, color: '#111827' };
+    definition.styles['trSectionLabel'] = { fontSize: 8, bold: true, color: '#6b7280' };
+    definition.styles['trSignature'] = { fontSize: 8, margin: [0, 5, 0, 0] };
+    definition.styles['trTableHeader'] = { fontSize: 8, bold: true, color: '#ffffff', fillColor: '#1a56db', margin: [5, 2, 5, 2] };
   }
 
   return definition;

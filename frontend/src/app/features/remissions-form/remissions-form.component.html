@@ -117,7 +117,7 @@
                    <p-button icon="pi pi-times-circle" [rounded]="true" [text]="true" severity="danger" (onClick)="removeItem($index)" [disabled]="items.length <= 1"></p-button>
                 </div>
                 
-                <div class="col-md-6 col-lg-4 d-flex flex-column gap-1">
+                <div class="col-md-6 col-lg-3 d-flex flex-column gap-1">
                   <label class="small fw-bold text-muted text-uppercase">Estado *</label>
                   <select formControlName="condition" class="form-select form-select-sm p-inputtext p-inputtext-sm">
                     <option value="nuevo">Nuevo</option>
@@ -126,7 +126,11 @@
                     <option value="dañado">Dañado</option>
                   </select>
                 </div>
-                <div class="col-md-6 col-lg-8 d-flex flex-column gap-1">
+                <div class="col-md-6 col-lg-3 d-flex flex-column gap-1">
+                  <label class="small fw-bold text-muted text-uppercase">Costo (Opcional)</label>
+                  <input pInputText type="number" formControlName="cost" class="p-inputtext-sm" placeholder="Ej: 1500000">
+                </div>
+                <div class="col-md-12 col-lg-6 d-flex flex-column gap-1">
                   <label class="small fw-bold text-muted text-uppercase">Observación del Ítem</label>
                   <input pInputText type="text" formControlName="observation" class="p-inputtext-sm" placeholder="Opcional...">
                 </div>
