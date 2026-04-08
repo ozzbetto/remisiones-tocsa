@@ -131,5 +131,82 @@ export const generateRemissionPDF = (remission: IRemission): TDocumentDefinition
     },
   };
 
+  const trItems = remission.items.filter(item => item.requiresResponsibilityTerm);
+
+  if (trItems.length > 0) {
+    const trTableRows = trItems.map(item => [
+      item.description,
+      item.brand,
+      item.model,
+      item.serial,
+      item.condition
+    ]);
+
+    const trPage = [
+      { text: '', pageBreak: 'before' },
+      { text: 'TÉRMINO DE RESPONSABILIDAD Y CUSTODIA DE EQUIPOS INFORMÁTICOS', style: 'trTitle', alignment: 'center', margin: [0, 0, 0, 20] },
+      { text: `Fecha: ${remission.date.toLocaleDateString()}`, style: 'infoText', margin: [0, 0, 0, 10] },
+      { text: `Por medio de la presente, el/la Sr./Sra. ${remission.recipient.name} con CI/RUC ${remission.recipient.idNumber}, asume la responsabilidad, cuidado y custodia de los siguientes equipos informáticos asignados para el desempeño de sus funciones en el cargo de ${remission.recipient.positionArea}:`, style: 'infoText', margin: [0, 0, 0, 15], alignment: 'justify' },
+      {
+        table: {
+          headerRows: 1,
+          widths: ['*', 'auto', 'auto', 'auto', 'auto'],
+          body: [
+            [
+              { text: 'Descripción', style: 'tableHeader' },
+              { text: 'Marca', style: 'tableHeader' },
+              { text: 'Modelo', style: 'tableHeader' },
+              { text: 'Nro. Serie', style: 'tableHeader' },
+              { text: 'Estado', style: 'tableHeader' },
+            ],
+            ...trTableRows
+          ]
+        },
+        layout: {
+          hLineWidth: function (i: number, node: any) {
+            return (i === 0 || i === node.table.body.length) ? 2 : 1;
+          },
+          vLineWidth: function (i: number, node: any) {
+            return (i === 0 || i === node.table.widths.length) ? 2 : 1;
+          },
+          hLineColor: function (i: number, node: any) {
+            return '#a0aabf';
+          },
+          vLineColor: function (i: number, node: any) {
+            return '#a0aabf';
+          },
+        },
+        margin: [0, 0, 0, 20]
+      },
+      { text: 'Condiciones de Uso y Responsabilidad:', style: 'sectionLabel', margin: [0, 0, 0, 10] },
+      {
+        ul: [
+          { text: 'El responsable asume el cuidado y custodia de los equipos descritos.', margin: [0, 0, 0, 5] },
+          { text: 'En caso de extravío, daño por negligencia o robo, el responsable asume el 100% del valor del equipo al momento de su compra.', margin: [0, 0, 0, 5] },
+          { text: 'Se compromete al uso adecuado del software y al estricto cumplimiento de las políticas de seguridad de la empresa.', margin: [0, 0, 0, 5] },
+          { text: 'Se compromete a la devolución inmediata del equipo en las mismas condiciones entregadas cuando le sea requerido o al término de su relación laboral.', margin: [0, 0, 0, 5] }
+        ],
+        style: 'infoText',
+        alignment: 'justify',
+        margin: [0, 0, 0, 40]
+      },
+      {
+        columns: [
+          {
+            stack: [
+              { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
+              { text: `Firma de Recepción y Conformidad\n${remission.recipient.name}\nCI/RUC: ${remission.recipient.idNumber}`, style: 'signature' },
+            ],
+            alignment: 'center',
+          },
+        ],
+      }
+    ];
+
+    definition.content = (definition.content as any[]).concat(trPage);
+    if (!definition.styles) definition.styles = {};
+    definition.styles['trTitle'] = { fontSize: 14, bold: true, color: '#1f2937' };
+  }
+
   return definition;
 };

@@ -10,6 +10,7 @@ export interface Item {
   quantity: number;
   condition: 'nuevo' | 'usado' | 'reparado' | 'dañado';
   observation?: string;
+  requiresResponsibilityTerm?: boolean;
 }
 
 export interface Remission {

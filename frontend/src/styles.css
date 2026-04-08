@@ -16,7 +16,7 @@
 }
 
 body {
-  background-color: var(--p-surface-0, #f8fafc);
+  background-color: #fefae0;
   color: var(--p-text-color, #0f172a);
   min-height: 100vh;
   margin: 0;
@@ -24,11 +24,26 @@ body {
   transition: background-color 0.2s, color 0.2s;
 }
 
-/* Dark mode support - PrimeNG Aura will handle surface colors automatically if configured, 
-   but we can also explicitly set background using PrimeNG css variables */
+/* Force PrimeNG surfaces to match our new light theme background */
+:root {
+  --p-surface-0: #fefae0;
+  --p-surface-50: #fefae0;
+}
+
+/* Dark mode support */
+.my-app-dark {
+  --p-surface-0: #121629;
+  --p-surface-50: #121629;
+  --p-surface-100: #1a1f35;
+  --p-surface-200: #232842;
+  --p-surface-800: #121629;
+  --p-surface-900: #0b0d19;
+  --p-content-background: #121629;
+}
+
 .my-app-dark body {
-  background-color: var(--p-surface-900, #020617);
-  color: var(--p-surface-0, #f1f5f9);
+  background-color: #0b0d19;
+  color: #f1f5f9;
 }
 
 /* Custom Table Styles */
@@ -36,23 +51,34 @@ body {
   overflow: hidden;
   border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
-  background-color: white;
+  background-color: var(--p-surface-0);
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .my-app-dark .table-container {
-  border-color: #1e293b;
-  background-color: #0f172a;
+  border-color: #232842;
+  background-color: var(--p-surface-0);
 }
 
 .remission-table th {
-  background-color: #f8fafc;
+  background-color: rgba(0,0,0,0.02);
   padding: 1rem 1.5rem;
   font-weight: 600;
   color: #475569;
 }
 
 .my-app-dark .remission-table th {
-  background-color: #1e293b;
+  background-color: rgba(255,255,255,0.05);
   color: #94a3b8;
+}
+
+/* Ensure PrimeNG Cards inherit the right surface color */
+.p-card {
+  background: var(--p-surface-0);
+}
+.my-app-dark .bg-light {
+  background-color: #1a1f35 !important;
+}
+.my-app-dark .bg-light-subtle {
+  background-color: #161a2b !important;
 }

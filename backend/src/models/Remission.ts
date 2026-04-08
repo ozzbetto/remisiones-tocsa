@@ -9,6 +9,7 @@ export interface IItem {
   quantity: number;
   condition: 'nuevo' | 'usado' | 'reparado' | 'dañado';
   observation?: string;
+  requiresResponsibilityTerm?: boolean;
 }
 
 export interface IRemission extends Document {
@@ -47,6 +48,7 @@ const ItemSchema = new Schema<IItem>({
     required: true 
   },
   observation: { type: String },
+  requiresResponsibilityTerm: { type: Boolean, default: false },
 });
 
 const RemissionSchema = new Schema<IRemission>({
@@ -55,7 +57,7 @@ const RemissionSchema = new Schema<IRemission>({
   sender: {
     name: { type: String, default: 'TOCSA S.A. - Depto. Informática' },
     ruc: { type: String, default: '80019114-5' },
-    address: { type: String, default: 'Av. Guido Boggiani 6990 esq. Mayor Eduardo Vera, Asunción' },
+    address: { type: String, default: 'América esq. Chacoré, Luque - Paraguay' },
   },
   recipient: {
     name: { type: String, required: true },
