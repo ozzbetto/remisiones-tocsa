@@ -7,22 +7,16 @@
   </div>
 
   <div class="card border-0 shadow-sm">
-    <p-table #dt [value]="remissions()" [paginator]="true" [rows]="10" 
-             [globalFilterFields]="['remissionNumber', 'recipient.name', 'recipient.idNumber']"
-             [rowHover]="true" styleClass="p-datatable-sm">
-      <ng-template pTemplate="caption">
-        <div class="d-flex justify-content-end">
-          <p-iconfield>
-            <p-inputicon styleClass="pi pi-search"></p-inputicon>
-            <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Buscar remisión..." />
-          </p-iconfield>
-        </div>
-      </ng-template>
+    <p-table #dt [value]="remissions()" 
+             [lazy]="true" (onLazyLoad)="loadRemissions($event)"
+             [paginator]="true" [rows]="rows()" [totalRecords]="totalRecords()" [loading]="loading()"
+             [rowHover]="true" styleClass="p-datatable-sm"
+             [rowsPerPageOptions]="[5, 10, 25, 50]">
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="remissionNumber">Número <p-sortIcon field="remissionNumber"></p-sortIcon></th>
-          <th pSortableColumn="date">Fecha <p-sortIcon field="date"></p-sortIcon></th>
-          <th pSortableColumn="recipient.name">Destinatario <p-sortIcon field="recipient.name"></p-sortIcon></th>
+          <th>Número</th>
+          <th>Fecha</th>
+          <th>Destinatario</th>
           <th>Estado</th>
           <th>Artículos</th>
           <th class="text-center">Acciones</th>
@@ -43,14 +37,18 @@
           <td>
             <div class="d-flex flex-column gap-1">
               <p-tag [value]="remission.transferReason | uppercase" severity="info" [rounded]="true"></p-tag>
-              <p-tag *ngIf="remission.status === 'annulled'" value="ANULADA" severity="danger" [rounded]="true"></p-tag>
+              @if (remission.status === 'annulled') {
+                <p-tag value="ANULADA" severity="danger" [rounded]="true"></p-tag>
+              }
+              @if (remission.pdfGenerated && remission.status !== 'annulled') {
+                <p-tag value="CON PDF" severity="success" [rounded]="true" styleClass="small"></p-tag>
+              }
             </div>
           </td>
           <td>
             <p-tag [value]="remission.items.length.toString() + ' ítem(s)'" severity="secondary" styleClass="border"></p-tag>
           </td>
           <td class="text-center">
-            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" pTooltip="Ver Detalles" [routerLink]="['/remisiones/ver', remission._id]"></p-button>
             <p-button icon="pi pi-download" [rounded]="true" [text]="true" severity="success" pTooltip="Descargar PDF" (onClick)="downloadPDF(remission._id!)"></p-button>
             <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" pTooltip="Editar" [routerLink]="['/remisiones/editar', remission._id]" [disabled]="remission.pdfGenerated || remission.status === 'annulled'"></p-button>
             

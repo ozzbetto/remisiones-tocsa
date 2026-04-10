@@ -1,101 +1,71 @@
-import { Request, Response } from 'express';
-import { Remission } from '../models/Remission.js';
+import { Request, Response, NextFunction } from 'express';
+import { remissionService } from '../services/remission.service.js';
+import { remissionSchema } from '../services/remission.schema.js';
 import { generateRemissionPDF } from '../services/pdf.service.js';
 
-export const getRemissions = async (_req: Request, res: Response) => {
+export const getRemissions = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const remissions = await Remission.find().sort({ createdAt: -1 });
-    res.json(remissions);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const result = await remissionService.getAll(page, limit);
+    res.json(result);
+  } catch (error) {
+    next(error);
   }
 };
 
-export const getRemissionById = async (req: Request, res: Response) => {
+export const getRemissionById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const remission = await Remission.findById(req.params.id);
-    if (!remission) return res.status(404).json({ message: 'Remisión no encontrada' });
+    const remission = await remissionService.getById(req.params.id);
     res.json(remission);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const createRemission = async (req: Request, res: Response) => {
+export const createRemission = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const newRemission = new Remission(req.body);
-    const savedRemission = await newRemission.save();
+    const validatedData = remissionSchema.parse(req.body);
+    const savedRemission = await remissionService.create(validatedData);
     res.status(201).json(savedRemission);
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const updateRemission = async (req: Request, res: Response) => {
+export const updateRemission = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existingRemission = await Remission.findById(req.params.id);
-    if (!existingRemission) return res.status(404).json({ message: 'Remisión no encontrada' });
-    
-    if (existingRemission.status === 'annulled') {
-      return res.status(403).json({ message: 'No se puede modificar una remisión anulada' });
-    }
-    
-    if (existingRemission.pdfGenerated) {
-      return res.status(403).json({ message: 'No se puede modificar una remisión que ya tiene el PDF generado' });
-    }
-
-    const updatedRemission = await Remission.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const validatedData = remissionSchema.partial().parse(req.body);
+    const updatedRemission = await remissionService.update(req.params.id, validatedData);
     res.json(updatedRemission);
-  } catch (error: any) {
-    res.status(400).json({ message: error.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const deleteRemission = async (req: Request, res: Response) => {
+export const deleteRemission = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existingRemission = await Remission.findById(req.params.id);
-    if (!existingRemission) return res.status(404).json({ message: 'Remisión no encontrada' });
-    
-    if (existingRemission.pdfGenerated) {
-      return res.status(403).json({ message: 'No se puede eliminar una remisión que ya tiene el PDF generado. Debe anularla.' });
-    }
-
-    await Remission.findByIdAndDelete(req.params.id);
+    await remissionService.delete(req.params.id);
     res.json({ message: 'Remisión eliminada con éxito' });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const annulRemission = async (req: Request, res: Response) => {
+export const annulRemission = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const existingRemission = await Remission.findById(req.params.id);
-    if (!existingRemission) return res.status(404).json({ message: 'Remisión no encontrada' });
-
-    if (!existingRemission.pdfGenerated) {
-      return res.status(400).json({ message: 'Solo se pueden anular remisiones que ya tienen el PDF generado. Si no tiene PDF, puede eliminarla.' });
-    }
-
-    if (existingRemission.status === 'annulled') {
-      return res.status(400).json({ message: 'La remisión ya se encuentra anulada' });
-    }
-
-    existingRemission.status = 'annulled';
-    const updatedRemission = await existingRemission.save();
+    const updatedRemission = await remissionService.annul(req.params.id);
     res.json(updatedRemission);
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const downloadRemissionPDF = async (req: Request, res: Response) => {
+export const downloadRemissionPDF = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const remission = await Remission.findById(req.params.id);
-    if (!remission) return res.status(404).json({ message: 'Remisión no encontrada' });
-
+    const remission = await remissionService.getById(req.params.id);
     const docDefinition = generateRemissionPDF(remission);
     
-    // Configuración para pdfmake (usando fuentes estándar para simplicidad)
     const PdfPrinter = (await import('pdfmake')).default;
     const fonts = {
       Roboto: {
@@ -114,12 +84,8 @@ export const downloadRemissionPDF = async (req: Request, res: Response) => {
     pdfDoc.pipe(res);
     pdfDoc.end();
 
-    // Marcar como PDF generado
-    if (!remission.pdfGenerated) {
-      remission.pdfGenerated = true;
-      await remission.save();
-    }
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    await remissionService.markAsPdfGenerated(req.params.id);
+  } catch (error) {
+    next(error);
   }
 };

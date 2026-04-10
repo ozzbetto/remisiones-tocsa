@@ -15,7 +15,8 @@
     "express": "^4.21.0",
     "mongoose": "^8.6.0",
     "morgan": "^1.10.0",
-    "pdfmake": "^0.2.12"
+    "pdfmake": "^0.2.12",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

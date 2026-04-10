@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Item {
@@ -39,6 +39,16 @@ export interface Remission {
   status?: 'active' | 'annulled';
 }
 
+export interface RemissionResponse {
+  remissions: Remission[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -46,8 +56,12 @@ export class RemissionService {
   private http = inject(HttpClient);
   private apiUrl = '/api/remissions';
 
-  getRemissions(): Observable<Remission[]> {
-    return this.http.get<Remission[]>(this.apiUrl);
+  getRemissions(page: number = 1, limit: number = 10): Observable<RemissionResponse> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    
+    return this.http.get<RemissionResponse>(this.apiUrl, { params });
   }
 
   getRemissionById(id: string): Observable<Remission> {

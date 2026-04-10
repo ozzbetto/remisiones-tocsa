@@ -1,14 +1,15 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { RemissionService, Remission } from '../../core/remission.service';
-import { TableModule } from 'primeng/table';
+import { TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-remissions-list',
@@ -19,35 +20,48 @@ import { TooltipModule } from 'primeng/tooltip';
   ],
   templateUrl: './remissions-list.component.html'
 })
-export class RemissionsListComponent implements OnInit {
+export class RemissionsListComponent {
   private remissionService = inject(RemissionService);
+  private messageService = inject(MessageService);
 
   remissions = signal<Remission[]>([]);
+  totalRecords = signal<number>(0);
+  loading = signal<boolean>(true);
+  rows = signal<number>(10);
 
-  ngOnInit(): void {
-    this.loadRemissions();
-  }
+  loadRemissions(event: TableLazyLoadEvent) {
+    this.loading.set(true);
+    const page = (event.first || 0) / (event.rows || 10) + 1;
+    const limit = event.rows || 10;
 
-  loadRemissions() {
-    this.remissionService.getRemissions().subscribe({
-      next: (data) => this.remissions.set(data),
-      error: (err) => console.error('Error al cargar remisiones:', err)
+    this.remissionService.getRemissions(page, limit).subscribe({
+      next: (response) => {
+        this.remissions.set(response.remissions);
+        this.totalRecords.set(response.pagination.total);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      }
     });
   }
 
   downloadPDF(id: string) {
     this.remissionService.downloadPDF(id);
+    this.messageService.add({ severity: 'info', summary: 'Descarga', detail: 'Iniciando descarga de PDF...' });
+    // Pequeño delay para recargar el estado pdfGenerated
+    setTimeout(() => {
+        const first = 0; // Podríamos guardar el estado actual si fuera necesario
+        this.loadRemissions({ first, rows: this.rows() });
+    }, 2000);
   }
 
   deleteRemission(id: string) {
     if (confirm('¿Está seguro de eliminar esta remisión? Esta acción no se puede deshacer.')) {
       this.remissionService.deleteRemission(id).subscribe({
         next: () => {
-          this.remissions.update(list => list.filter(r => r._id !== id));
-        },
-        error: (err) => {
-          console.error('Error al eliminar:', err);
-          alert(err.error?.message || 'Error al eliminar la remisión');
+          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Remisión eliminada correctamente' });
+          this.loadRemissions({ first: 0, rows: this.rows() });
         }
       });
     }
@@ -56,14 +70,9 @@ export class RemissionsListComponent implements OnInit {
   annulRemission(id: string) {
     if (confirm('¿Está seguro de anular esta remisión? Aparecerá como ANULADA en el sistema y en el PDF.')) {
       this.remissionService.annulRemission(id).subscribe({
-        next: (updatedRemission) => {
-          this.remissions.update(list => 
-            list.map(r => r._id === id ? updatedRemission : r)
-          );
-        },
-        error: (err) => {
-          console.error('Error al anular:', err);
-          alert(err.error?.message || 'Error al anular la remisión');
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Remisión anulada correctamente' });
+          this.loadRemissions({ first: 0, rows: this.rows() });
         }
       });
     }

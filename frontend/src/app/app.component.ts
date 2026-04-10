@@ -3,13 +3,15 @@ import { RouterOutlet } from '@angular/router';
 import { ThemeService } from './core/theme.service';
 import { MenubarModule } from 'primeng/menubar';
 import { ButtonModule } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
 import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, MenubarModule, ButtonModule],
+  imports: [RouterOutlet, MenubarModule, ButtonModule, ToastModule],
   template: `
+    <p-toast></p-toast>
     <p-menubar [model]="items">
       <ng-template #start>
         <div class="flex items-center gap-2 font-bold text-primary mr-4 ml-2 d-flex align-items-center">
