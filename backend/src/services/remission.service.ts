@@ -1,5 +1,5 @@
-import { Remission, IRemission } from '../models/Remission.js';
-import { RemissionInput } from './remission.schema.ts';
+import { Remission } from '../models/Remission.js';
+import { RemissionInput } from './remission.schema.js';
 
 export class RemissionService {
   async getAll(page: number = 1, limit: number = 10) {
