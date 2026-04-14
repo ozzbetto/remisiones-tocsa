@@ -1,26 +1,33 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RemissionService, Remission } from '../../core/remission.service';
+import { InventoryService, InventoryAsset } from '../../core/inventory.service';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { MessageModule } from 'primeng/message';
+import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 @Component({
   selector: 'app-remissions-form',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, RouterLink,
-    CardModule, ButtonModule, InputTextModule, TextareaModule, MessageModule
+    CommonModule, ReactiveFormsModule, FormsModule, RouterLink,
+    CardModule, ButtonModule, InputTextModule, TextareaModule, MessageModule,
+    DialogModule, TableModule, IconFieldModule, InputIconModule
   ],
   templateUrl: './remissions-form.component.html'
 })
 export class RemissionsFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private remissionService = inject(RemissionService);
+  private inventoryService = inject(InventoryService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -29,6 +36,13 @@ export class RemissionsFormComponent implements OnInit {
   isViewMode = false;
   remissionId: string | null = null;
   isSubmitting = signal(false);
+
+  // Inventory Search
+  showInventoryDialog = false;
+  inventorySearchQuery = '';
+  inventoryResults: InventoryAsset[] = [];
+  isSearchingInventory = false;
+  activeItemIndex: number | null = null;
 
   ngOnInit(): void {
     this.initForm();
@@ -121,6 +135,48 @@ export class RemissionsFormComponent implements OnInit {
   isItemFieldInvalid(index: number, fieldName: string): boolean {
     const field = this.items.at(index).get(fieldName);
     return field ? (field.invalid && (field.dirty || field.touched)) : false;
+  }
+
+  // --- Inventory Search Methods ---
+  openInventorySearch(index: number) {
+    if (this.isViewMode) return;
+    this.activeItemIndex = index;
+    this.inventorySearchQuery = '';
+    this.inventoryResults = [];
+    this.showInventoryDialog = true;
+  }
+
+  searchInventory() {
+    if (!this.inventorySearchQuery.trim()) return;
+
+    this.isSearchingInventory = true;
+    console.log('🔍 Buscando en inventario con query:', this.inventorySearchQuery);
+    
+    this.inventoryService.searchAssets(this.inventorySearchQuery).subscribe({
+      next: (results) => {
+        console.log('✅ Resultados recibidos del backend:', results);
+        this.inventoryResults = results;
+        this.isSearchingInventory = false;
+      },
+      error: (err) => {
+        console.error('❌ Error en la búsqueda de inventario:', err);
+        this.isSearchingInventory = false;
+      }
+    });
+  }
+
+  selectAsset(asset: InventoryAsset) {
+    if (this.activeItemIndex !== null) {
+      const itemGroup = this.items.at(this.activeItemIndex);
+      itemGroup.patchValue({
+        description: asset.description,
+        brand: asset.brand,
+        model: asset.model,
+        serial: asset.serial
+      });
+      this.showInventoryDialog = false;
+      this.activeItemIndex = null;
+    }
   }
 
   onSubmit() {

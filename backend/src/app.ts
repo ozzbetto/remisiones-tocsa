@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import remissionRoutes from './routes/remission.routes.js';
+import inventoryRoutes from './routes/inventory.routes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/remissions', remissionRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 // Error Handling
 app.use(errorHandler);

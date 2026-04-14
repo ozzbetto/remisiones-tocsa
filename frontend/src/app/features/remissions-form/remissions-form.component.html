@@ -94,7 +94,10 @@
             <div [formGroupName]="$index" class="position-relative border rounded-3 p-3 bg-light-subtle">
               <div class="row g-3">
                 <div class="col-lg-4 d-flex flex-column gap-1">
-                  <label class="small fw-bold text-muted text-uppercase">Descripción *</label>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <label class="small fw-bold text-muted text-uppercase">Descripción *</label>
+                    <p-button *ngIf="!isViewMode" icon="pi pi-search" [text]="true" size="small" label="Buscar en InvGate" (onClick)="openInventorySearch($index)"></p-button>
+                  </div>
                   <input pInputText type="text" formControlName="description" placeholder="Ej: Monitor LED" class="p-inputtext-sm" [ngClass]="{'ng-invalid ng-dirty': !isViewMode && isItemFieldInvalid($index, 'description')}">
                 </div>
                 <div class="col-sm-6 col-lg-2 d-flex flex-column gap-1">
@@ -171,4 +174,48 @@
       <p-button *ngIf="!isViewMode" type="submit" [label]="isEditMode ? 'Actualizar Remisión' : 'Generar Remisión'" icon="pi pi-check-circle" [loading]="isSubmitting()"></p-button>
     </div>
   </form>
-</div>
+  </div>
+
+  <!-- Inventory Search Dialog -->
+  <p-dialog header="Buscar Equipo en InvGate" [(visible)]="showInventoryDialog" [modal]="true" [style]="{ width: '70vw' }" [breakpoints]="{ '960px': '95vw' }" [draggable]="false" [resizable]="false">
+  <div class="vstack gap-3 mt-2">
+    <p-iconfield iconPosition="left">
+      <p-inputicon styleClass="pi pi-search"></p-inputicon>
+      <input type="text" pInputText placeholder="Buscar por nombre, serial o marca..." [(ngModel)]="inventorySearchQuery" (keyup.enter)="searchInventory()" class="w-full" style="width: 100%;" />
+    </p-iconfield>
+
+    <div class="d-flex justify-content-end">
+      <p-button label="Buscar" icon="pi pi-search" [loading]="isSearchingInventory" (onClick)="searchInventory()"></p-button>
+    </div>
+
+    <p-table [value]="inventoryResults" [paginator]="true" [rows]="5" responsiveLayout="scroll" styleClass="p-datatable-sm shadow-sm border rounded">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Descripción</th>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>Serie</th>
+          <th style="width: 80px"></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-asset>
+        <tr>
+          <td>{{ asset.description }}</td>
+          <td>{{ asset.brand }}</td>
+          <td>{{ asset.model }}</td>
+          <td>{{ asset.serial }}</td>
+          <td>
+            <p-button icon="pi pi-plus" [rounded]="true" [text]="true" (onClick)="selectAsset(asset)" pTooltip="Seleccionar"></p-button>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center py-4 text-muted">
+            {{ inventorySearchQuery ? 'No se encontraron resultados.' : 'Ingrese un término de búsqueda.' }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+  </p-dialog>

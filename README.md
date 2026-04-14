@@ -1,11 +1,12 @@
-# Remisiones IT TOCSA S.A. - Management System
+# Remisiones IT TOCSA S.A. - Management System (v2.0.0)
 
 ## 🇬🇧 English Version
 
 ### Project Description
 This is a full-stack web application (MEAN stack: MongoDB, Express.js, Angular, Node.js) designed to manage and generate delivery notes (Remisiones) for **IT TOCSA S.A.** The system allows creating, listing, and downloading PDF documents for equipment transfers.
 
-### Features
+### Features (v2.0.0)
+*   **InvGate Integration:** Search and import IT equipment details (Brand, Model, Serial) directly from InvGate Asset Management.
 *   **Remission Management:** Create, edit, and view delivery notes.
 *   **Automatic PDF Generation:** Generate official documents on-the-fly using `pdfmake`.
 *   **Sequential Numbering:** Automatic tracking of remission numbers.
