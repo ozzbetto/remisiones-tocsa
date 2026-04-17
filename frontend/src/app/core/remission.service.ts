@@ -56,10 +56,14 @@ export class RemissionService {
   private http = inject(HttpClient);
   private apiUrl = '/api/remissions';
 
-  getRemissions(page: number = 1, limit: number = 10): Observable<RemissionResponse> {
-    const params = new HttpParams()
+  getRemissions(page: number = 1, limit: number = 10, search?: string): Observable<RemissionResponse> {
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
+    
+    if (search) {
+      params = params.set('search', search);
+    }
     
     return this.http.get<RemissionResponse>(this.apiUrl, { params });
   }

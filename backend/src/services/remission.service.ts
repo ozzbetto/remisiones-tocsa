@@ -2,12 +2,22 @@ import { Remission } from '../models/Remission.js';
 import { RemissionInput } from './remission.schema.js';
 
 export class RemissionService {
-  async getAll(page: number = 1, limit: number = 10) {
+  async getAll(page: number = 1, limit: number = 10, search?: string) {
     const skip = (page - 1) * limit;
     
+    let query = {};
+    if (search) {
+      query = {
+        $or: [
+          { remissionNumber: { $regex: search, $options: 'i' } },
+          { 'recipient.name': { $regex: search, $options: 'i' } }
+        ]
+      };
+    }
+
     const [remissions, total] = await Promise.all([
-      Remission.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
-      Remission.countDocuments()
+      Remission.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Remission.countDocuments(query)
     ]);
 
     return {

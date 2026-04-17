@@ -28,13 +28,15 @@ export class RemissionsListComponent {
   totalRecords = signal<number>(0);
   loading = signal<boolean>(true);
   rows = signal<number>(10);
+  searchTerm = signal<string>('');
 
   loadRemissions(event: TableLazyLoadEvent) {
     this.loading.set(true);
     const page = (event.first || 0) / (event.rows || 10) + 1;
     const limit = event.rows || 10;
+    const search = this.searchTerm();
 
-    this.remissionService.getRemissions(page, limit).subscribe({
+    this.remissionService.getRemissions(page, limit, search).subscribe({
       next: (response) => {
         this.remissions.set(response.remissions);
         this.totalRecords.set(response.pagination.total);
@@ -44,6 +46,11 @@ export class RemissionsListComponent {
         this.loading.set(false);
       }
     });
+  }
+
+  onSearch(value: string) {
+    this.searchTerm.set(value);
+    this.loadRemissions({ first: 0, rows: this.rows() });
   }
 
   downloadPDF(id: string) {

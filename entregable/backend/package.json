@@ -1,13 +1,13 @@
 {
   "name": "remisiones-it-tocsa-backend",
-  "version": "2.1.0",
+  "version": "2.0.0",
   "description": "Backend para Remisiones IT TOCSA S.A.",
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "build": "npx tsc"
+    "build": "tsc"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -14,6 +14,7 @@ WORKDIR /app/backend
 COPY backend/package*.json ./
 RUN npm install
 COPY backend/ ./
+# Asegurarse de que el script build pueda encontrar tsc
 RUN npm run build
 
 # Etapa 3: Entorno de Producción

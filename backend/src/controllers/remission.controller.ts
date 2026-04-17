@@ -7,7 +7,8 @@ export const getRemissions = async (req: Request, res: Response, next: NextFunct
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const result = await remissionService.getAll(page, limit);
+    const search = req.query.search as string;
+    const result = await remissionService.getAll(page, limit, search);
     res.json(result);
   } catch (error) {
     next(error);

@@ -12,12 +12,24 @@
              [paginator]="true" [rows]="rows()" [totalRecords]="totalRecords()" [loading]="loading()"
              [rowHover]="true" styleClass="p-datatable-sm"
              [rowsPerPageOptions]="[5, 10, 25, 50]">
+      <ng-template pTemplate="caption">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="p-input-icon-left">
+            <p-iconField iconPosition="left">
+              <p-inputIcon styleClass="pi pi-search"></p-inputIcon>
+              <input type="text" pInputText placeholder="Buscar por número o destinatario..." 
+                     (input)="onSearch($any($event.target).value)" class="w-100" style="min-width: 300px;"/>
+            </p-iconField>
+          </span>
+          <p-button label="Nueva Remisión" icon="pi pi-plus" [routerLink]="['/remisiones/nuevo']" severity="primary"></p-button>
+        </div>
+      </ng-template>
       <ng-template pTemplate="header">
         <tr>
           <th>Número</th>
           <th>Fecha</th>
           <th>Destinatario</th>
-          <th>Estado</th>
+          <th>Motivo</th>
           <th>Artículos</th>
           <th class="text-center">Acciones</th>
         </tr>
@@ -40,15 +52,13 @@
               @if (remission.status === 'annulled') {
                 <p-tag value="ANULADA" severity="danger" [rounded]="true"></p-tag>
               }
-              @if (remission.pdfGenerated && remission.status !== 'annulled') {
-                <p-tag value="CON PDF" severity="success" [rounded]="true" styleClass="small"></p-tag>
-              }
             </div>
           </td>
           <td>
             <p-tag [value]="remission.items.length.toString() + ' ítem(s)'" severity="secondary" styleClass="border"></p-tag>
           </td>
           <td class="text-center">
+            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" pTooltip="Ver Detalles" [routerLink]="['/remisiones/ver', remission._id]"></p-button>
             <p-button icon="pi pi-download" [rounded]="true" [text]="true" severity="success" pTooltip="Descargar PDF" (onClick)="downloadPDF(remission._id!)"></p-button>
             <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" pTooltip="Editar" [routerLink]="['/remisiones/editar', remission._id]" [disabled]="remission.pdfGenerated || remission.status === 'annulled'"></p-button>
             
